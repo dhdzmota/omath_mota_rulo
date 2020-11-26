@@ -9,8 +9,8 @@ import omath_mota_rulo.config as config
 
 
 DATA_PATH = os.path.join(
-    config.PRJ_DIR,
-    '/data/raw/covid_mun/')
+    config.DATA_DIR,
+    'raw/covid_mun/')
 
 
 search_api = 'https://datamexico.org/api/data.jsonrecords?'
