@@ -5,12 +5,15 @@ import os
 
 import pandas as pd
 
-import omath_mota_rulo.config as config
+from omath_mota_rulo import config
+from omath_mota_rulo.data import municipios
 
 
 DATA_PATH = os.path.join(
     config.DATA_DIR,
     'raw/covid_mun/')
+
+os.makedirs(DATA_PATH, exist_ok=True)
 
 
 search_api = 'https://datamexico.org/api/data.jsonrecords?'
@@ -38,62 +41,67 @@ params = '&'.join([
 urls = search_api + munic_neigh + params
 
 
-def load_data(url):
+def get_data_from_api(url):
     """
-
     """
-    urlData = requests.get(url).content
-    data_dict = json.loads(urlData.decode('utf-8'))
-    if 'status' in data_dict.keys():
-        return None
-    data = pd.json_normalize(data_dict['data'])
+    req = requests.get(url).content
+    req_data = json.loads(req.decode('utf-8'))
 
-    if config.VERBOSE:
-        print('Success')
+    if 'status' in req_data.keys():
+        data = None
+    else:
+        data = pd.json_normalize(req_data['data'])
+
     return data
 
 
-def get_keys_muns(municipios):
+def download(keep_current_downloads=False):
     """
-    """
-    id_est = municipios['Cve_Ent'].unique()
-    for _id_est in id_est:
-        id_mun = municipios[
-            municipios['Cve_Ent'] == _id_est
-        ]['Cve_Mun'].unique()
-        for _id_mun in id_mun:
-
-            m = municipios[(
-                municipios['Cve_Ent'] == _id_est
-            ) & (
-                municipios['Cve_Mun'] == _id_mun)]
-
-            name = m['Nom_Mun'].unique()[0]
-
-            if _id_mun < 10:
-                _id_mun = '00' + str(_id_mun)
-            elif _id_mun < 100:
-                _id_mun = '0' + str(_id_mun)
-            else:
-                _id_mun = str(_id_mun)
-            key = str(_id_est) + _id_mun
-            yield key, name
-
-
-def download():
-    """
+    keep_current_downloads = True
     """
 
-    municipios = pd.read_csv('data/raw/Municipios.csv')
+    # Get municipios and their codes
+    municipios_codes = municipios.get_municipio_codes()
+    all_data, errors = {}, {}
+    for municipio, municipios_code in municipios_codes.items():
+        # Path of the file
+        data_path = os.path.join(
+            DATA_PATH,
+            '%s_%s.csv.gz' % (municipio, municipios_code))
 
-    dict_mun = {}
-    for mun in get_keys_muns(municipios):
-        if config.VERBOSE:
-            print(mun)
-        key, name = mun
-        dict_mun[name] = load_data(urls % (key, key))
-        dict_mun[name].to_csv(
-            os.path.join(DATA_PATH, '%s.csv' % name))
+        # If file already exist and you are willing to keep the current
+        # download, skip this municipio
+        # Set keep_current_downloads to False in order to always
+        # download the file regardless of what you have in the download
+        # folder.
+        if os.path.exists(data_path):
+            if keep_current_downloads:
+                continue
+
+        # Get municipio data
+        municipio_data = get_data_from_api(
+            urls % (municipios_code, municipios_code))
+
+        # Keep track of failed downloads
+        if municipio_data is None:
+            errors[municipio] = municipios_code
+            if config.VERBOSE:
+                print('Error', municipio, municipios_code)
+            continue
+        else:
+            if config.VERBOSE:
+                print(municipio, municipios_code)
+
+        # Add to the downloaded municipio data some metadata
+        municipio_data['municipio_code'] = municipios_code
+        municipio_data['municipio'] = municipio
+
+        # Keep in memory all the data
+        all_data[municipio] = municipio_data
+
+        # Save the data
+        municipio_data.to_csv(
+            data_path, index=False, compression='gzip')
 
 
 if __name__ == '__main__':
