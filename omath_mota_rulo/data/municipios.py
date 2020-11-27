@@ -21,10 +21,16 @@ def get():
     return data
 
 
-def get_municipio_codes():
+def get_municipio_codes(nom_ent=None):
     """
     """
     municipios_data = get()
+
+    if nom_ent is not None:
+        municipios_data = \
+            municipios_data[
+                municipios_data[
+                    'Nom_Ent'] == nom_ent]
 
     municipios_data['Cve_Ent_Mun'] = municipios_data['Cve_Ent'].astype(str)
     municipios_data['Cve_Ent_Mun'] += municipios_data['Cve_Mun'].apply(
