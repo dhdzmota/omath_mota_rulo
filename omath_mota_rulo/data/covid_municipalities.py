@@ -103,6 +103,10 @@ def download(keep_current_downloads=False):
         municipio_data.to_csv(
             data_path, index=False, compression='gzip')
 
+    if config.VERBOSE:
+        print('Errors')
+        print(errors)
+
 
 if __name__ == '__main__':
 
