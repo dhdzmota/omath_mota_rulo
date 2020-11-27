@@ -110,4 +110,4 @@ def download(keep_current_downloads=False):
 
 if __name__ == '__main__':
 
-    download()
+    download(keep_current_downloads=True)

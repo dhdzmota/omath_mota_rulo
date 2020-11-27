@@ -47,9 +47,9 @@ def download():
         for month in range(0, 12)]
 
 
+    # Query all the months
     data = []
     for date in dates:
-
         endpoint = search_api + datase_name + params + date
         response = HTTP.request(
             'GET',
@@ -59,12 +59,26 @@ def download():
         response_json = json.loads(response.data.decode('utf-8'))
 
         n_records = len(response_json['records'])
-        print(date, n_records)
+        if config.VERBOSE:
+            print(date, n_records)
         if n_records > 0:
             data += response_json['records']
 
     data = pd.json_normalize(data)
 
+    # Reformat column names
+    data.columns = [x.replace('fields.', '') for x in data.columns]
+
+    # Add numberic notation of capacity status
+    data['estatus_capacidad_uci_percent'] = data[
+        'estatus_capacidad_uci'
+    ].map({'Buena': 49, 'Media': 89, 'Crítica': 100})
+
+    data['estatus_capacidad_uci_ordinal'] = data[
+        'estatus_capacidad_uci'
+    ].map({'Buena': 1, 'Media': 2, 'Crítica': 3})
+
+    # Save data
     data.to_csv(
         DATA_PATH,
         index=False,
@@ -78,6 +92,8 @@ def get():
     data = pd.read_csv(
         DATA_PATH,
         compression='gzip')
+
+    data['fecha'] = pd.to_datetime(data['fecha'])
 
     return data
 
