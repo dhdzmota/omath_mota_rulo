@@ -79,6 +79,15 @@ def get():
         DATA_PATH,
         compression='gzip')
 
+    data.columns = [x.replace('fields.', '') for x in data.columns]
+    data['fecha'] = pd.to_datetime(data['fecha'])
+
+    data = data[data['fecha'] >= '2020-05-01']
+
+    data['estatus_capacidad_uci_'] = data[
+        'estatus_capacidad_uci'
+    ].map({'Buena': 1, 'Media': 2, 'Crítica': 3})
+
     return data
 
 
