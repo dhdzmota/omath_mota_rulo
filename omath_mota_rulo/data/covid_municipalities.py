@@ -63,7 +63,7 @@ def download(keep_current_downloads=False):
     # Get municipios and their codes
     municipios_codes = municipios.get_municipio_codes()
     all_data, errors = {}, {}
-    for municipio, municipios_code in municipios_codes.items():
+    for municipios_code, municipio in municipios_codes.items():
         # Path of the file
         data_path = os.path.join(
             DATA_PATH,
@@ -103,9 +103,9 @@ def download(keep_current_downloads=False):
         municipio_data.to_csv(
             data_path, index=False, compression='gzip')
 
-if config.VERBOSE:
-    print('Errors')
-    print(errors)
+    if config.VERBOSE:
+        print('Errors')
+        print(errors)
 
 
 if __name__ == '__main__':

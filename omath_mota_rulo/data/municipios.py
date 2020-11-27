@@ -31,10 +31,10 @@ def get_municipio_codes():
         lambda x: '{:03d}'.format(x))
 
     municipio_codes = municipios_data[[
-        'Nom_Mun','Cve_Ent_Mun'
+        'Nom_Mun', 'Cve_Ent_Mun'
     ]].drop_duplicates()
 
     municipio_codes = municipio_codes.set_index(
-        'Nom_Mun')['Cve_Ent_Mun'].to_dict()
+        'Cve_Ent_Mun')['Nom_Mun'].to_dict()
 
     return municipio_codes
