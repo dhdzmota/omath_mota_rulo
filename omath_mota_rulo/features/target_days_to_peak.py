@@ -1,12 +1,6 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
-"""
-Created on Fri Nov 27 09:56:45 2020
-
-@author: Raul Sanchez-Vazquez
-"""
 import os
-import numpy as np
 import pandas as pd
 
 from omath_mota_rulo import config
@@ -28,6 +22,7 @@ def process():
 
     # Get hospital state's timelines
     capacidad_hosp_data = capacidad_hospitalaria.get()
+
     # Get hospitals critical peaks
     peaks_data = critical_peaks.get()
 
@@ -69,18 +64,18 @@ def process():
     dataset = pd.concat(dataset)
 
     # Compute different variants of the target
-    targets['days_to_peak_inv'] = 1 / targets['days_to_peak']
+    dataset['days_to_peak_inv'] = 1 / dataset['days_to_peak']
 
     for days in _TARGET_DAYS:
-        targets['is_next_peak_in_%s_days' % days] = (
-            targets['days_to_peak'] <= days
+        dataset['is_next_peak_in_%s_days' % days] = (
+            dataset['days_to_peak'] <= days
         ).astype(int)
 
     # Save dataset
     if config.VERBOSE:
         print(DATA_PATH)
 
-    targets.to_csv(
+    dataset.to_csv(
         DATA_PATH,
         compression='gzip')
 
