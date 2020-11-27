@@ -69,8 +69,6 @@ def download(keep_current_downloads=False):
             DATA_PATH,
             '%s_%s.csv.gz' % (municipio, municipios_code))
 
-        if municipios_code == '9010':
-            print(data_path)
         # If file already exist and you are willing to keep the current
         # download, skip this municipio
         # Set keep_current_downloads to False in order to always
