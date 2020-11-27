@@ -63,12 +63,14 @@ def download(keep_current_downloads=False):
     # Get municipios and their codes
     municipios_codes = municipios.get_municipio_codes()
     all_data, errors = {}, {}
-    for municipio, municipios_code in municipios_codes.items():
+    for municipios_code, municipio in municipios_codes.items():
         # Path of the file
         data_path = os.path.join(
             DATA_PATH,
             '%s_%s.csv.gz' % (municipio, municipios_code))
 
+        if municipios_code == '9010':
+            print(data_path)
         # If file already exist and you are willing to keep the current
         # download, skip this municipio
         # Set keep_current_downloads to False in order to always
@@ -103,9 +105,9 @@ def download(keep_current_downloads=False):
         municipio_data.to_csv(
             data_path, index=False, compression='gzip')
 
-if config.VERBOSE:
-    print('Errors')
-    print(errors)
+    if config.VERBOSE:
+        print('Errors')
+        print(errors)
 
 
 if __name__ == '__main__':

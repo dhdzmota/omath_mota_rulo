@@ -80,3 +80,8 @@ def get():
         compression='gzip')
 
     return data
+
+
+if __name__ == '__main__':
+
+    download()
