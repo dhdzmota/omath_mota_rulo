@@ -2,8 +2,8 @@
 # -*- coding: utf-8 -*-
 import pandas as pd
 
-from omath_mota_rulo import config
-from omath_mota_rulo.data import capacidad_hospitalaria
+from data_scientia import config
+from data_scientia.data import capacidad_hospitalaria
 
 
 def get_down_hill(hosp_data):
