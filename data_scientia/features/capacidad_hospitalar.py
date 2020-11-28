@@ -7,9 +7,11 @@ import pandas as pd
 from data_scientia import config
 from data_scientia.data import municipios
 from data_scientia.data import capacidad_hospitalaria
+from data_scientia.data import covid_municipalities
 from data_scientia.features import target_days_to_peak
 from data_scientia.features import ts_features
 from data_scientia.features import ocupacion_features
+
 
 
 DATA_PATH = os.path.join(
@@ -97,16 +99,28 @@ def get_near_hospitals(capacidad_hosp_data):
     return near_hospitals
 
 
-def get_municipio_features(muncipios_data, fechas):
+def get_municipio_features(municipio_codes, fechas):
     """
     Returns
     --------
     X_municipios: pandas.DataFrame
         One row for each fecha.
     """
-    # ts_features.transform(data)
 
-    return
+    # Get municipios daily cases
+    daily_cases = covid_municipalities.get_municipios_daily_cases(
+        municipio_codes)
+    daily_cases.index = pd.to_datetime(daily_cases.index)
+
+    X_municipios = []
+    for fecha in fechas:
+        x_local = ts_features.transform(daily_cases.loc[:fecha].values)
+        X_municipios.append(x_local)
+
+    X_municipios = pd.concat(X_municipios)
+    X_municipios.index = fechas
+
+    return X_municipios
 
 
 def get_hospital_features(hospitals_data, fechas):
@@ -119,7 +133,6 @@ def get_hospital_features(hospitals_data, fechas):
 
     data = {}
     for h, h_data in hospitals_data.groupby('nombre_hospital'):
-        print(h)
         estatus_capacidad_uci_percent = h_data.drop_duplicates(
             'fecha'
         ).set_index(
@@ -158,13 +171,14 @@ def process():
     X = []
     for hospital, hospital_data in dataset.groupby('nombre_hospital'):
         fechas = hospital_data['fecha']
+
         local_near_hosp = near_hospitals[hospital]
-        local_near_municipios = near_municipios[hospital]
+        municipio_codes = near_municipios[hospital]
 
+        # Municipio features
+        X_municipio = get_municipio_features(municipio_codes, fechas)
 
-        if len(local_near_hosp) > 0:
-            break
-
+        # Hospital features
         hospitals_data = capacidad_hosp_data[
             capacidad_hosp_data['nombre_hospital'].isin(local_near_hosp)]
 
@@ -172,7 +186,9 @@ def process():
             hospitals_data=hospitals_data,
             fechas=fechas)
 
-        X.append(X_hospitals)
+        X_local = pd.concat([X_municipio, X_hospitals], axis=1)
+
+        X.append(X_local)
 
     X = pd.concat(X)
 

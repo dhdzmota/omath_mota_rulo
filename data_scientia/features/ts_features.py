@@ -3,6 +3,9 @@
 import numpy as np
 import pandas as pd
 
+from data_scientia import config
+
+
 from tsfresh.feature_extraction.feature_calculators import (
     abs_energy,
     absolute_sum_of_changes,
