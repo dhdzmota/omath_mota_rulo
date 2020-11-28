@@ -4,6 +4,7 @@
 import numpy as np
 import pandas as pd
 
+from data_scientia import config
 
 def num_hospitals_around(data):
     return data.shape[1] - 1
