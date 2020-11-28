@@ -1,18 +1,11 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
-"""
-Created on Wed Nov 25 21:51:56 2020
-
-@author: Raul Sanchez-Vazquez
-"""
-
 import os
 import urllib3
 import json
 import pandas as pd
 
-
-from omath_mota_rulo import config
+from data_scientia import config
 
 
 DATA_PATH = os.path.join(

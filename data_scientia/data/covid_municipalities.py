@@ -1,3 +1,4 @@
+#!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 import json
 import requests
@@ -5,8 +6,8 @@ import os
 
 import pandas as pd
 
-from omath_mota_rulo import config
-from omath_mota_rulo.data import municipios
+from data_scientia import config
+from data_scientia.data import municipios
 
 
 DATA_PATH = os.path.join(

@@ -3,9 +3,9 @@
 import os
 import pandas as pd
 
-from omath_mota_rulo import config
-from omath_mota_rulo.data import capacidad_hospitalaria
-from omath_mota_rulo.features import critical_peaks
+from data_scientia import config
+from data_scientia.data import capacidad_hospitalaria
+from data_scientia.features import critical_peaks
 
 
 DATA_PATH = os.path.join(

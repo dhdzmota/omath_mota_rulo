@@ -1,8 +1,7 @@
+#!/usr/bin/env python3
 # -*- coding: utf-8 -*-
-
 import numpy as np
 import pandas as pd
-
 
 from tsfresh.feature_extraction.feature_calculators import (
     abs_energy,
@@ -50,22 +49,23 @@ features_list = [
 
 
 def transform(ts):
-    """ Create time series features
+    """Create time series features.
 
     Parameters
     ----------
-    ts: numpy array
+    ts: numpy.array
 
     Returns
     ---------
     features: list
-        list of calculated features
+        List of calculated features.
     """
     if isinstance(ts, list):
         ts = np.array(ts)
 
     if not isinstance(ts, np.ndarray):
-        print('Error: argument is not a numpy array')
+        if config.VERBOSE:
+            print('Error: argument is not a numpy array')
         return None
 
     features = pd.DataFrame()

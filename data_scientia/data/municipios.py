@@ -1,12 +1,11 @@
-# -*- coding: utf-8 -*-
-
+#!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 import os
 
 import pandas as pd
 
-import omath_mota_rulo.config as config
-from omath_mota_rulo.features.utils import distance_utils
+import data_scientia.config as config
+from data_scientia.features.utils import distance_utils
 
 
 DATA_PATH = os.path.join(
