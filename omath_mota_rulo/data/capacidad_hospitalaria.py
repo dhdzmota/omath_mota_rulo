@@ -94,6 +94,10 @@ def get():
         compression='gzip')
 
     data['fecha'] = pd.to_datetime(data['fecha'])
+    data['coordenadas'] = data['coordenadas'].apply(eval)
+
+    data['latitude'] = data['coordenadas'].apply(lambda x: x[0])
+    data['longitude'] = data['coordenadas'].apply(lambda x: x[1])
 
     return data
 
