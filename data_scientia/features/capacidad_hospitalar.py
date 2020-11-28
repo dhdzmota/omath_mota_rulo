@@ -15,10 +15,20 @@ DATA_PATH = os.path.join(
     'processed/capacidad_hospitalar.csv.gz')
 
 _TARGET_NAME = 'is_next_peak_in_7_days'
-
+_MAX_METERS_MUNICIPIOS = 15e+3
+_MAX_METERS_HOSPITALS = 5e+3
 
 def get_municipios_near_hospitals(capacidad_hosp_data):
-    """Get the municipios codes near by a hospital geolocation.
+    """Get the municipios near by.
+
+    Parameters
+    ----------
+    capacidad_hosp_data: pandas.DataFrame
+
+    Returns
+    --------
+    near_hospitals: dict
+        Contains a hospital name that maps to a list of municipios near by.
     """
     # Get unique hospitals
     hospital_geos = capacidad_hosp_data[[
@@ -27,11 +37,10 @@ def get_municipios_near_hospitals(capacidad_hosp_data):
         'nombre_hospital'
     ]].drop_duplicates()
 
-
-    # Get municipios located at most 15km
+    # Get municipios located near by the hospital
     near_muninicipios = municipios.get_municipio_near_geo(
         hospital_geos[['latitude', 'longitude']].values.tolist(),
-        max_meters=15e+3)
+        max_meters=_MAX_METERS_MUNICIPIOS)
 
     # Get a dictionary mapping hospital names to municipio codes
     zip_near_municipios_hospital = zip(
@@ -46,6 +55,16 @@ def get_municipios_near_hospitals(capacidad_hosp_data):
 
 def get_near_hospitals(capacidad_hosp_data):
     """Get the hospitals near by.
+
+    Parameters
+    ----------
+    capacidad_hosp_data: pandas.DataFrame
+
+    Returns
+    --------
+    near_hospitals: dict
+        Contains a hospital name that maps to a list of other hospitals
+        near by.
     """
     # Get unique hospitals
     hospital_geos = capacidad_hosp_data[[
@@ -54,11 +73,10 @@ def get_near_hospitals(capacidad_hosp_data):
         'nombre_hospital'
     ]].drop_duplicates()
 
-
-    # Get hospitals located at most 15km
+    # Get other hospitals located near by the hospital
     near_hospitals = capacidad_hospitalaria.get_hospital_near_geo(
         hospital_geos[['latitude', 'longitude']].values.tolist(),
-        max_meters=5e+3)
+        max_meters=_MAX_METERS_HOSPITALS)
 
     # Get a dictionary mapping hospital names to municipio codes
     zip_near_hospitals = zip(
@@ -69,6 +87,18 @@ def get_near_hospitals(capacidad_hosp_data):
          for k, v in zip_near_hospitals)
 
     return near_hospitals
+
+
+def get_municipio_features(muncipios_data):
+    """
+    """
+    return
+
+
+def get_hospital_features(hospitals_data):
+    """
+    """
+    return
 
 
 def process():
