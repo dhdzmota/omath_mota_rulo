@@ -26,6 +26,9 @@ from tsfresh.feature_extraction.feature_calculators import (
 )
 
 
+def num_municipios(data):
+    return data.shape[1]
+
 features_list = [
     abs_energy,
     absolute_sum_of_changes,
@@ -48,7 +51,7 @@ features_list = [
 ]
 
 
-def transform(ts):
+def transform(data):
     """Create time series features.
 
     Parameters
@@ -60,17 +63,21 @@ def transform(ts):
     features: list
         List of calculated features.
     """
-    if isinstance(ts, list):
-        ts = np.array(ts)
 
-    if not isinstance(ts, np.ndarray):
+    if not isinstance(data, np.ndarray):
         if config.VERBOSE:
             print('Error: argument is not a numpy array')
         return None
+
+    n_municipios = num_municipios(data)
+
+    ts = data.sum(axis=1)
 
     features = pd.DataFrame()
     for feature in features_list:
         feature_name = str(feature).split(' ')[1]
         features[feature_name] = [feature(ts)]
+
+    features['n_municipios'] = [n_municipios]
 
     return features
