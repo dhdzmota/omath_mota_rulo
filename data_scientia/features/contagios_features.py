@@ -5,7 +5,7 @@ import pandas as pd
 
 
 from data_scientia.features import *
-
+from data_scientia.features.utils.impute import impute_nans
 
 def transform(data):
     """Create time series features.
@@ -25,6 +25,7 @@ def transform(data):
             print('Error: argument is not a numpy array')
         return None
 
+    data = impute_nans(data)
     n_municipios = num_municipios(data)
 
     ts = data.sum(axis=1)
