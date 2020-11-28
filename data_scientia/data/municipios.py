@@ -121,6 +121,6 @@ def get_municipio_near_geo(geo_points, max_meters=15e+3):
         near_municipios.set_index('Cve_Ent_Mun', inplace=True)
         near_municipios['meters_to_geo_point'] = valid_dist
 
-        municipios_in_radio.append(near_municipios)
+        municipios_in_radio.append(near_municipios.index.unique().to_list())
 
     return municipios_in_radio
