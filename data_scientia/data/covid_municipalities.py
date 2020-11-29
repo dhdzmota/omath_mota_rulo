@@ -3,6 +3,7 @@
 import json
 import requests
 import os
+import glob
 
 import pandas as pd
 
@@ -58,7 +59,6 @@ def get_data_from_api(url):
 
 def download(keep_current_downloads=False):
     """
-    keep_current_downloads = True
     """
 
     # Get municipios and their codes
@@ -107,6 +107,41 @@ def download(keep_current_downloads=False):
     if config.VERBOSE:
         print('Errors')
         print(errors)
+
+
+def get(municipio_code, filter_just_municipio=False):
+    """Fetch municipio covid data.
+
+    Parameters
+    -----------
+    municipio_code: str
+
+    Returns
+    -------
+    data: pandas.DataFrame
+
+    Example
+    --------
+    ::
+
+        municipio_code = '9002'
+        data = get(municipio_code)
+
+        data.iloc[0]
+    """
+    municipio_filepath = glob.glob(
+        DATA_PATH + '*_%s.csv.gz' % municipio_code)[0]
+
+    data = pd.read_csv(
+        municipio_filepath,
+        dtype={
+            'municipio_code': str,
+            'Municipality ID': str})
+
+    if filter_just_municipio:
+        data = data[data['Municipality ID'] == municipio_code]
+
+    return data
 
 
 if __name__ == '__main__':

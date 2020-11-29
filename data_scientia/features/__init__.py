@@ -1,9 +1,10 @@
+#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
 import numpy as np
 
 from tsfresh.feature_extraction.feature_calculators import (
     abs_energy,
     absolute_sum_of_changes,
-    cid_ce,
     count_above_mean,
     count_below_mean,
     kurtosis,

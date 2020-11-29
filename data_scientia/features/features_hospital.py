@@ -1,11 +1,12 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
-import numpy as np
+
 import pandas as pd
 
-
+from data_scientia import config
 from data_scientia.features import *
 from data_scientia.features.utils.impute import impute_nans
+
 
 def transform(data):
     """Create time series features.
@@ -26,15 +27,12 @@ def transform(data):
         return None
 
     data = impute_nans(data)
-    n_municipios = num_municipios(data)
-
-    ts = data.sum(axis=1)
 
     features = pd.DataFrame()
-    for feature in contagios_features_list:
+    for feature in hospital_features_list:
         feature_name = str(feature).split(' ')[1]
-        features[feature_name] = [feature(ts)]
-
-    features['n_municipios'] = [n_municipios]
+        features[feature_name] = [feature(data)]
 
     return features
+
+
