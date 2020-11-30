@@ -15,7 +15,7 @@ DATA_PATH = os.path.join(
     'processed/target_days_to_peak.csv.gz')
 
 # Day used to compute the targets
-_TARGET_DAYS = [7, 15, 20, 30]
+_TARGET_DAYS = [7, 10, 15, 20, 30]
 
 
 def process():
