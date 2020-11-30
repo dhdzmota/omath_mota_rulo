@@ -144,6 +144,19 @@ def get(municipio_code, filter_just_municipio=False):
     return data
 
 
+def get_state(state):
+    """
+    """
+    codes = municipios.get_municipio_codes(state)
+
+    state_df = pd.DataFrame()
+    for code in codes:
+        state_df = state_df.append(get(code, True))
+
+    state_df['Time'] = pd.to_datetime(state_df['Time'])
+    return state_df
+
+
 if __name__ == '__main__':
 
     download(keep_current_downloads=True)
