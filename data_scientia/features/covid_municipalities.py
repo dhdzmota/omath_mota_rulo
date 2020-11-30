@@ -56,4 +56,7 @@ def get_daily_cases(municipio_codes):
     daily_cases = pd.concat(daily_cases, axis=1)
     daily_cases.columns = municipio_codes
 
+    daily_cases.index = pd.to_datetime(daily_cases.index)
+    daily_cases.sort_index(inplace=True)
+
     return daily_cases

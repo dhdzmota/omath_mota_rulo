@@ -38,7 +38,6 @@ def get():
     return data
 
 
-
 def get_municipio_codes(nom_ent=None):
     """
     """
