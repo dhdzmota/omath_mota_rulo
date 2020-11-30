@@ -7,8 +7,6 @@ from data_scientia import config
 from data_scientia.data import municipios
 from data_scientia.data import capacidad_hospitalaria
 from data_scientia.features import covid_municipalities
-
-
 from data_scientia.features.utils import distance_utils
 
 
@@ -248,7 +246,7 @@ def get_neighbor_municipio_daily_cases(hospital_name, max_meters=15e+3):
 
     Returns
     --------
-    neighbor_hospitals_daily_status: pandas.DataFrame
+    neighbor_municipios_daily_cases: pandas.DataFrame
         Dataframe where columns are hospitals and rows are dates.
 
     Example
@@ -272,7 +270,7 @@ def get_neighbor_municipio_daily_cases(hospital_name, max_meters=15e+3):
         hospital_name,
         max_meters=max_meters)
 
-    neighbor_hospitals_daily_status = covid_municipalities.get_daily_cases(
+    neighbor_municipios_daily_cases = covid_municipalities.get_daily_cases(
         neighbor_municipios)
 
-    return neighbor_hospitals_daily_status
+    return neighbor_municipios_daily_cases

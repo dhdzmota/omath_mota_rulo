@@ -1,6 +1,8 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 import os
+import datetime
+import numpy as np
 import pandas as pd
 
 from data_scientia import config
@@ -33,6 +35,16 @@ def process():
             capacidad_hosp_data['nombre_hospital'] == hospital
         ].sort_values('fecha', ascending=True)
 
+        # Instances to be considered as negative class at the end of the
+        # hospital timeline
+        margin_end_timeline = (
+            hosp_capacidad['fecha'].max() - datetime.timedelta(30))
+
+        is_non_peak_instance_after_last_peak = (
+            hosp_capacidad['fecha'] > hospital_peaks['peak_date'].max()
+        ) & (
+            hosp_capacidad['fecha'] < margin_end_timeline)
+
         # Compute days to all peaks of the hospital
         days_to_peak = hosp_capacidad['fecha'].apply(
             lambda x: (hospital_peaks['peak_date'] - x).dt.days
@@ -42,6 +54,10 @@ def process():
 
         # Get closest peak a head with respect to the current day
         days_to_peak = days_to_peak.apply(lambda x: x[x > 0].min())
+
+        days_to_peak.loc[
+            is_non_peak_instance_after_last_peak.values
+        ] = np.inf
 
         # Append to the hospital timeline the number of days from the
         # next critical peak
