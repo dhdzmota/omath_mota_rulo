@@ -20,7 +20,6 @@ DATA_PATH = os.path.join(
 
 _TARGETS = [
     'is_next_peak_in_7_days',
-    'is_next_peak_in_10_days',
      'is_next_peak_in_15_days',
      'is_next_peak_in_20_days',
      'is_next_peak_in_30_days']
@@ -46,24 +45,20 @@ def get_municipio_features(hospital_name, fechas):
 
         daily_cases_local = daily_cases.loc[:fecha_]
 
-
         x_local = features_contagios.transform(
             daily_cases_local.values
         ).add_prefix('contagios_')
 
-        x_local_rolling_7 = features_contagios.transform(
+        x_rolling_7_days = features_contagios.transform(
             daily_cases_local.rolling(window=7).sum().values
-        ).add_prefix('contagios_7_days_sum_')
+        ).add_prefix('contagios_sum_7_days_')
 
-        x_local_rolling_15 = features_contagios.transform(
+        x_rolling_15_days = features_contagios.transform(
             daily_cases_local.rolling(window=15).sum().values
-        ).add_prefix('contagios_15_days_sum_')
+        ).add_prefix('contagios_sum_15_days_')
 
-        x = pd.concat([
-            x_local,
-            x_local_rolling_7,
-            x_local_rolling_15],
-            axis=1)
+        x = pd.concat([x_local, x_rolling_7_days, x_rolling_15_days], axis=1)
+
         X_municipios.append(x)
 
     X_municipios = pd.concat(X_municipios)
@@ -128,17 +123,18 @@ def process_hospital(hospital_name):
         fechas)
 
     # Hospital features
-    X_neighbor_hospitals = get_hospital_features(
-        hospital_name,
-        fechas)
+#    X_neighbor_hospitals = get_hospital_features(
+#        hospital_name,
+#        fechas)
 
     idx_dates = pd.Series(pd.Series(
-        X_municipio.index.tolist() + X_neighbor_hospitals.index.tolist()
+#        X_municipio.index.tolist() + X_neighbor_hospitals.index.tolist()
+        X_municipio.index.tolist()
     ).sort_values().unique())
 
     dataset_local = pd.concat([
         X_municipio.reindex(idx_dates),
-        X_neighbor_hospitals.reindex(idx_dates),
+#        X_neighbor_hospitals.reindex(idx_dates),
         hospital_data.set_index('fecha').reindex(idx_dates)[_TARGETS]
     ], axis=1)
 
