@@ -38,7 +38,7 @@ def process():
         # Instances to be considered as negative class at the end of the
         # hospital timeline
         margin_end_timeline = (
-            hosp_capacidad['fecha'].max() - datetime.timedelta(30))
+            hosp_capacidad['fecha'].max() - datetime.timedelta(15))
 
         is_non_peak_instance_after_last_peak = (
             hosp_capacidad['fecha'] > hospital_peaks['peak_date'].max()
