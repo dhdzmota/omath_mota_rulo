@@ -15,7 +15,7 @@ DATA_PATH = os.path.join(
     'processed/target_days_to_peak.csv.gz')
 
 # Day used to compute the targets
-_TARGET_DAYS = [7, 15, 20, 30]
+_TARGET_DAYS = [7, 10, 15, 20, 30]
 
 
 def process():
@@ -38,7 +38,7 @@ def process():
         # Instances to be considered as negative class at the end of the
         # hospital timeline
         margin_end_timeline = (
-            hosp_capacidad['fecha'].max() - datetime.timedelta(15))
+            hosp_capacidad['fecha'].max() - datetime.timedelta(10))
 
         is_non_peak_instance_after_last_peak = (
             hosp_capacidad['fecha'] > hospital_peaks['peak_date'].max()

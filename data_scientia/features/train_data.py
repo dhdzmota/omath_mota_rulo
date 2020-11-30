@@ -20,6 +20,7 @@ DATA_PATH = os.path.join(
 
 _TARGETS = [
     'is_next_peak_in_7_days',
+    'is_next_peak_in_10_days',
      'is_next_peak_in_15_days',
      'is_next_peak_in_20_days',
      'is_next_peak_in_30_days']
@@ -42,10 +43,28 @@ def get_municipio_features(hospital_name, fechas):
     X_municipios = []
     for fecha in fechas:
         fecha_ = fecha - datetime.timedelta(1)
+
+        daily_cases_local = daily_cases.loc[:fecha_]
+
+
         x_local = features_contagios.transform(
-            daily_cases.loc[:fecha_].values
+            daily_cases_local.values
         ).add_prefix('contagios_')
-        X_municipios.append(x_local)
+
+        x_local_rolling_7 = features_contagios.transform(
+            daily_cases_local.rolling(window=7).sum().values
+        ).add_prefix('contagios_7_days_sum_')
+
+        x_local_rolling_15 = features_contagios.transform(
+            daily_cases_local.rolling(window=15).sum().values
+        ).add_prefix('contagios_15_days_sum_')
+
+        x = pd.concat([
+            x_local,
+            x_local_rolling_7,
+            x_local_rolling_15],
+            axis=1)
+        X_municipios.append(x)
 
     X_municipios = pd.concat(X_municipios)
     X_municipios.index = fechas
@@ -94,6 +113,7 @@ def get_hospital_features(hospital_name, fechas):
 
 def process_hospital(hospital_name):
     """
+    hospital_name = hospital_names[0]
     """
 
     global _DATA_GRP
