@@ -62,28 +62,12 @@ def download():
     # Denormalize data
     data = pd.json_normalize(data)
 
-    # Reformat column names
-    data.columns = [x.replace('fields.', '') for x in data.columns]
-
-    # Add numberic notation of capacity status
-    data['estatus_capacidad_uci_percent'] = data[
-        'estatus_capacidad_uci'
-    ].map({'Buena': 49, 'Media': 89, 'Crítica': 100})
-
-    data['estatus_capacidad_uci_ordinal'] = data[
-        'estatus_capacidad_uci'
-    ].map({'Buena': 1, 'Media': 2, 'Crítica': 3})
-
-    # Denormalize geolocation.
-    data['coordenadas'] = data['coordenadas'].apply(eval)
-    data['latitude'] = data['coordenadas'].apply(lambda x: x[0])
-    data['longitude'] = data['coordenadas'].apply(lambda x: x[1])
-
     # Save data
     data.to_csv(
         DATA_PATH,
         index=False,
-        compression='gzip')
+        compression='gzip',
+        encoding='utf8')
 
 
 def get():
@@ -99,6 +83,22 @@ def get():
     data = pd.read_csv(
         DATA_PATH,
         compression='gzip')
+
+    data.columns = [x.replace('fields.', '') for x in data.columns]
+
+    # Add numberic notation of capacity status
+    data['estatus_capacidad_uci_percent'] = data[
+        'estatus_capacidad_uci'
+    ].map({'Buena': 49, 'Media': 89, 'Crítica': 100})
+
+    data['estatus_capacidad_uci_ordinal'] = data[
+        'estatus_capacidad_uci'
+    ].map({'Buena': 1, 'Media': 2, 'Crítica': 3})
+
+    # Denormalize geolocation.
+    data['coordenadas'] = data['coordenadas'].apply(eval)
+    data['latitude'] = data['coordenadas'].apply(lambda x: x[0])
+    data['longitude'] = data['coordenadas'].apply(lambda x: x[1])
 
     data['fecha'] = pd.to_datetime(data['fecha'])
 

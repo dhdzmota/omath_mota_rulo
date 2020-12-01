@@ -110,6 +110,8 @@ def get_municipio_codes(state_name=None):
     if isinstance(state_name, str):
         municipios_data = _DATA_MUN.query(
             'Nom_Ent == "%s"' % state_name)
+    else:
+        municipios_data = _DATA_MUN.copy()
 
     # Get a dictionary municipio codes and their municipio names
     municipio_codes = municipios_data[[

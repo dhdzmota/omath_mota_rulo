@@ -43,7 +43,7 @@ def plot_hospital_timeline(
     ax.scatter(
         x=hospital_peaks_data['peak_date'].apply(date2num),
         y=[3] * hospital_peaks_data.shape[0],
-        s=hospital_peaks_data['peak_length'] * 100,
+        s=100,
         color=color,
         alpha=.5)
 
@@ -77,7 +77,7 @@ def plot_hospital_timeline(
         ax.scatter(
             x=is_peak_in_next_n_data['fecha'].apply(date2num),
             y=is_peak_in_next_n_data['estatus_capacidad_uci_ordinal'],
-            s=s,
+            s=100,
             alpha=.5,
             color=binary_color[is_peak_in_next_n])
 

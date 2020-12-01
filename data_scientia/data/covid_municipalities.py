@@ -85,7 +85,8 @@ def download(keep_current_downloads=False):
     municipios_codes = {
         **municipios.get_municipio_codes(state_name='Jalisco'),
         **municipios.get_municipio_codes(state_name='Ciudad de México'),
-        **municipios.get_municipio_codes(state_name='Morelos')}
+        **municipios.get_municipio_codes(state_name='Morelos'),
+        **municipios.get_municipio_codes(state_name='México')}
 
     errors = {}
     for municipio_code, municipio in municipios_codes.items():
