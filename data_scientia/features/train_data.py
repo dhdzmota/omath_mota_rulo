@@ -175,8 +175,6 @@ def process():
         hospital_names,
         n_jobs=config.N_JOBS)
 
-    for hospital_name in hospital_names:
-        process_hospital(hospital_name)
 
     dataset = pd.concat(dataset)
     dataset.index.name = 'fecha'
