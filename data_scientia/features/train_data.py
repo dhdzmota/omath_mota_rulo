@@ -35,7 +35,10 @@ def get_municipio_features(hospital_name, fechas):
     """
 
     # Get municipios daily cases
-    daily_cases = hospital.get_neighbor_municipio_daily_cases(hospital_name)
+    daily_cases = hospital.get_neighbor_municipio_daily_cases(
+        hospital_name,
+        max_meters=15e+3)
+
     daily_cases.index = pd.to_datetime(daily_cases.index)
 
     X_municipios = []
@@ -69,7 +72,7 @@ def get_municipio_features(hospital_name, fechas):
 def get_hospital_features(hospital_name, fechas):
     """
     Include process_hospital() this in order to compute near hospital features.
-    
+
     X_neighbor_hospitals = get_hospital_features(
         hospital_name,
         fechas)
@@ -171,6 +174,9 @@ def process():
         process_hospital,
         hospital_names,
         n_jobs=config.N_JOBS)
+
+    for hospital_name in hospital_names:
+        process_hospital(hospital_name)
 
     dataset = pd.concat(dataset)
     dataset.index.name = 'fecha'
