@@ -10,7 +10,6 @@ from data_scientia.features import hospital
 from data_scientia.features import target_days_to_peak
 from data_scientia.features.utils import parallel
 from data_scientia.features import features_contagios
-from data_scientia.features import features_hospital
 
 
 DATA_PATH = os.path.join(
@@ -67,48 +66,8 @@ def get_municipio_features(hospital_name, fechas):
     return X_municipios
 
 
-def get_hospital_features(hospital_name, fechas):
-    """
-    """
-    # Get municipios daily cases
-    neighbor_hospitals_status = hospital.get_neighbor_hospitals_status(
-        hospital_name)
-    neighbor_hospitals_status.index = pd.to_datetime(
-        neighbor_hospitals_status.index)
-
-    X_neighbor_hospitals, dates = [], []
-    for fecha in fechas:
-        fecha_ = fecha - datetime.timedelta(1)
-
-        try:
-            neighbor_hospitals_status_ = neighbor_hospitals_status.loc[
-                :fecha_
-            ].values
-        except:
-            continue
-
-        if neighbor_hospitals_status_.shape[0] == 0:
-            continue
-
-        x_local = features_hospital.transform(
-            neighbor_hospitals_status_
-        ).add_prefix('neighbor_hosp_')
-
-        dates.append(fecha_)
-        X_neighbor_hospitals.append(x_local)
-
-    if len(X_neighbor_hospitals) == 0:
-        X_neighbor_hospitals = pd.DataFrame()
-    else:
-        X_neighbor_hospitals = pd.concat(X_neighbor_hospitals)
-        X_neighbor_hospitals.index = pd.to_datetime(dates)
-
-    return X_neighbor_hospitals
-
-
 def process_hospital(hospital_name):
     """
-    hospital_name = hospital_names[0]
     """
 
     global _DATA_GRP
@@ -122,19 +81,12 @@ def process_hospital(hospital_name):
         hospital_name,
         fechas)
 
-    # Hospital features
-#    X_neighbor_hospitals = get_hospital_features(
-#        hospital_name,
-#        fechas)
-
     idx_dates = pd.Series(pd.Series(
-#        X_municipio.index.tolist() + X_neighbor_hospitals.index.tolist()
         X_municipio.index.tolist()
     ).sort_values().unique())
 
     dataset_local = pd.concat([
         X_municipio.reindex(idx_dates),
-#        X_neighbor_hospitals.reindex(idx_dates),
         hospital_data.set_index('fecha').reindex(idx_dates)[_TARGETS]
     ], axis=1)
 
@@ -164,13 +116,7 @@ def process():
         process_hospital,
         hospital_names,
         n_jobs=config.N_JOBS)
-    """
-    dataset = []
-    for hospital_name in hospital_names:
-        print(hospital_name)
-        dataset_local = process_hospital(hospital_name)
-        dataset.append(dataset_local)
-    """
+
     dataset = pd.concat(dataset)
     dataset.index.name = 'fecha'
 

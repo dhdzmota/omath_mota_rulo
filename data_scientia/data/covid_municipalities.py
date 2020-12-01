@@ -10,11 +10,12 @@ import pandas as pd
 from data_scientia import config
 from data_scientia.data import municipios
 
-
+# Data path
 DATA_PATH = os.path.join(
     config.DATA_DIR,
     'raw/covid_mun/')
 
+# Create data folder.
 os.makedirs(DATA_PATH, exist_ok=True)
 
 
@@ -40,13 +41,26 @@ params = '&'.join([
     'r=withoutProcessOption'
 ])
 
-urls = search_api + munic_neigh + params
+api_url = search_api + munic_neigh + params
 
 
-def get_data_from_api(url):
+def download_municipio_covid_data(municipio_code):
+    """Download a single municipio covid data.
+
+    Parameters
+    -----------
+    municipio_code: str
+        Municipio code.
+
+    Returns
+    --------
+    data: pandas.DataFrame
+        Dataframe containing daily cases of covid.
     """
-    """
-    req = requests.get(url).content
+
+    req = requests.get(
+        api_url % (municipio_code, municipio_code)
+    ).content
     req_data = json.loads(req.decode('utf-8'))
 
     if 'status' in req_data.keys():
@@ -58,17 +72,30 @@ def get_data_from_api(url):
 
 
 def download(keep_current_downloads=False):
-    """
+    """Download all municipios covid data.
+
+    Parameters
+    ----------
+    keep_current_downloads: bool
+        Flag to skip downloads for files already downloaded.
+        Set to False in order download and replace current files.
     """
 
-    # Get municipios and their codes
-    municipios_codes = municipios.get_municipio_codes()
-    all_data, errors = {}, {}
-    for municipios_code, municipio in municipios_codes.items():
+    # Get target municipios
+    municipios_codes = {
+        **municipios.get_municipio_codes(state_name='Jalisco'),
+        **municipios.get_municipio_codes(state_name='Ciudad de México'),
+        **municipios.get_municipio_codes(state_name='Morelos')}
+
+    errors = {}
+    for municipio_code, municipio in municipios_codes.items():
+        if config.VERBOSE:
+            print(municipio, municipio_code)
+
         # Path of the file
         data_path = os.path.join(
             DATA_PATH,
-            '%s_%s.csv.gz' % (municipio, municipios_code))
+            '%s_%s.csv.gz' % (municipio, municipio_code))
 
         # If file already exist and you are willing to keep the current
         # download, skip this municipio
@@ -80,25 +107,18 @@ def download(keep_current_downloads=False):
                 continue
 
         # Get municipio data
-        municipio_data = get_data_from_api(
-            urls % (municipios_code, municipios_code))
+        municipio_data = download_municipio_covid_data(municipio_code)
 
         # Keep track of failed downloads
         if municipio_data is None:
-            errors[municipio] = municipios_code
+            errors[municipio] = municipio_code
             if config.VERBOSE:
-                print('Error', municipio, municipios_code)
+                print('Error', municipio, municipio_code)
             continue
-        else:
-            if config.VERBOSE:
-                print(municipio, municipios_code)
 
         # Add to the downloaded municipio data some metadata
-        municipio_data['municipio_code'] = municipios_code
+        municipio_data['municipio_code'] = municipio_code
         municipio_data['municipio'] = municipio
-
-        # Keep in memory all the data
-        all_data[municipio] = municipio_data
 
         # Save the data
         municipio_data.to_csv(
@@ -144,19 +164,47 @@ def get(municipio_code, filter_just_municipio=False):
     return data
 
 
-def get_state(state):
-    """
-    """
-    codes = municipios.get_municipio_codes(state)
+def get_state(state_name):
+    """Get state's municipios codes.
 
+    Parameters
+    -----------
+    state_name: str
+        State name, see `municipios.get_municipio_codes` to find the valid
+        strings for the state names.
+
+    Returns
+    --------
+    state_df: pandas.DataFrame
+        Dataframe with the state covid cases.
+
+    Example
+    --------
+    ::
+
+        from data_scientia.data import covid_municipalities
+
+        state_name = 'Jalisco'
+        covid_municipalities.get_state(state)
+
+    """
+
+    # Get municipio codes for the state.
+    codes = municipios.get_municipio_codes(state_name)
+
+    # Fetch municipio data
     state_df = pd.DataFrame()
     for code in codes:
-        state_df = state_df.append(get(code, True))
+        municipio_data = get(code, filter_just_municipio=True)
+        state_df = state_df.append(municipio_data)
 
+    # Convert dates.
     state_df['Time'] = pd.to_datetime(state_df['Time'])
+
     return state_df
 
 
 if __name__ == '__main__':
-
+    """
+    """
     download(keep_current_downloads=True)
