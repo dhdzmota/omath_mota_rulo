@@ -19,7 +19,7 @@ _MUNICIPIO_LONG = None
 
 
 def get():
-    """
+    """Fech data.
     """
     data = pd.read_csv(DATA_PATH)
 
@@ -38,15 +38,78 @@ def get():
     return data
 
 
-def get_municipio_codes(nom_ent=None):
-    """
-    """
-    municipios_data = get()
+def get_municipio_codes(state_name=None):
+    """Get municipio codes and names.
 
-    # Filter entidades
-    if nom_ent is not None:
-        municipios_data = municipios_data[
-            municipios_data['Nom_Ent'] == nom_ent]
+    Parameters
+    ----------
+    state_name: str
+        State name, valid strings are:
+            - "Aguascalientes"
+            - "Baja California"
+            - "Baja California Sur"
+            - "Campeche"
+            - "Chiapas"
+            - "Chihuahua"
+            - "Ciudad de México"
+            - "Coahuila de Zaragoza"
+            - "Colima"
+            - "Durango"
+            - "Guanajuato"
+            - "Guerrero"
+            - "Hidalgo"
+            - "Jalisco"
+            - "Michoacán de Ocampo"
+            - "Morelos"
+            - "México"
+            - "Nayarit"
+            - "Nuevo León"
+            - "Oaxaca"
+            - "Puebla"
+            - "Querétaro"
+            - "Quintana Roo"
+            - "San Luis Potosí"
+            - "Sinaloa"
+            - "Sonora"
+            - "Tabasco"
+            - "Tamaulipas"
+            - "Tlaxcala"
+            - "Veracruz de Ignacio de la Llave"
+            - "Yucatán"
+            - "Zacatecas"
+    Returns
+    --------
+    municipio_codes: dict
+        Dictionary containing municipio's codes and their names.
+
+    Example
+    --------
+    ::
+
+        from data_scientia.data import municipios
+
+        state_name = 'Colima'
+        municipios.get_municipio_codes(state_name=state_name)
+        Out[1]:
+        {'6001': 'Armería',
+         '6002': 'Colima',
+         '6003': 'Comala',
+         '6004': 'Coquimatlán',
+         '6005': 'Cuauhtémoc',
+         '6006': 'Ixtlahuacán',
+         '6007': 'Manzanillo',
+         '6008': 'Minatitlán',
+         '6009': 'Tecomán',
+         '6010': 'Villa de Álvarez'}
+
+    """
+    load()
+    global _DATA_MUN
+
+    # Filter specific state_name
+    if isinstance(state_name, str):
+        municipios_data = _DATA_MUN.query(
+            'Nom_Ent == "%s"' % state_name)
 
     # Get a dictionary municipio codes and their municipio names
     municipio_codes = municipios_data[[
@@ -55,12 +118,11 @@ def get_municipio_codes(nom_ent=None):
         'Cve_Ent_Mun'
     )['Nom_Mun'].to_dict()
 
-
     return municipio_codes
 
 
 def load():
-    """
+    """Load auxiliar variables used by this module.
     """
     global _DATA_MUN
     global _MUNICIPIO_LAT
@@ -78,21 +140,36 @@ def load():
 
 def get_municipio_near_geo(geo_points, max_meters=15e+3):
     """
+    Parameters
+    -----------
+    geo_points: list
+        List containing (latitude, longitude) coordinates.
+
+    max_meters: int, float
+        Max. number of meters from the geo_points to the municipio centroid
+        used to filter municipios.
+
     Examples
     ---------
     ::
 
-        from omath_mota_rulo.data import capacidad_hospitalaria
+        from data_scientia.data import capacidad_hospitalaria
+        from data_scientia.data import municipios
 
-        geo_points = capacidad_hospitalaria.get().sample(2, random_state=0)[[
-            'latitude',
-            'longitude'
-        ]].drop_duplicates().values.tolist()
+        # Guadalajara geolocation
+        geo_points = [[20.6737777, -103.4054536]]
 
         # Get municipios loated at most 5K meters.
-        get_municipio_near_geo(
+        municipios.get_municipio_near_geo(
             geo_points,
-            max_meters=5e+3)
+            max_meters=15e+3)
+        Out[1]: [['14039', '14098']]
+
+        municipios.get_municipio_codes(state_name='Jalisco')['14039']
+        Out[2]: 'Guadalajara'
+
+        municipios.get_municipio_codes(state_name='Jalisco')['14098']
+        Out[3]: 'San Pedro Tlaquepaque'
     """
 
     load()
