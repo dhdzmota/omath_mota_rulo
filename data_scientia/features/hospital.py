@@ -273,4 +273,8 @@ def get_neighbor_municipio_daily_cases(hospital_name, max_meters=15e+3):
     neighbor_municipios_daily_cases = covid_municipalities.get_daily_cases(
         neighbor_municipios)
 
+    neighbor_municipios_daily_cases.index = pd.to_datetime(
+        neighbor_municipios_daily_cases.index)
+    neighbor_municipios_daily_cases.sort_index(inplace=True)
+
     return neighbor_municipios_daily_cases

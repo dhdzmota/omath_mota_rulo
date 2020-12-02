@@ -28,7 +28,7 @@ _TARGETS = [
 _DATA_GRP = None
 
 
-def get_municipio_features(hospital_name, fechas):
+def get_hospital_covid_cases(hospital_name, fechas):
     """
     Returns
     --------
@@ -38,6 +38,7 @@ def get_municipio_features(hospital_name, fechas):
     Examples
     ---------
     ::
+        from data_scientia.features import train_data
 
         hospital_name = 'ALTA ESPECIALIDAD DE ZUMPANGO'
         fechas = pd.to_datetime([
@@ -51,6 +52,10 @@ def get_municipio_features(hospital_name, fechas):
             '2020-11-12',
             '2020-11-13',
             '2020-11-14'])
+
+        train_data.get_hospital_covid_cases(
+            hospital_name,
+            fechas)
     """
 
     # Get municipios daily cases
@@ -58,11 +63,9 @@ def get_municipio_features(hospital_name, fechas):
         hospital_name,
         max_meters=15e+3)
 
-    daily_cases.index = pd.to_datetime(daily_cases.index)
-
     X_covid_cases_features = []
     for fecha in fechas:
-        fecha_upper_boundary = fecha - datetime.timedelta(1)
+        fecha_upper_boundary = fecha - datetime.timedelta(2)
 
         daily_cases_local = daily_cases.loc[:fecha_upper_boundary]
 
@@ -76,16 +79,16 @@ def get_municipio_features(hospital_name, fechas):
                 daily_cases_local.rolling(
                     window=day_break
                 ).sum().values
-            ).add_prefix(f'covid_cases__sum_{day_break}_days_')
+            ).add_prefix(f'covid_cases_sum_{day_break}_days_')
 
             x_rolling.append(x_r)
 
         x = pd.concat(x_rolling, axis=1)
+        x.index = [fecha]
 
         X_covid_cases_features.append(x)
 
     X_covid_cases_features = pd.concat(X_covid_cases_features)
-    X_covid_cases_features.index = fechas
 
     return X_covid_cases_features
 
@@ -112,7 +115,7 @@ def process_hospital(hospital_name):
     fechas = hospital_data['fecha']
 
     # Compute covid cases features for the hospital timeline
-    X_covid_cases_hospital = get_municipio_features(
+    X_covid_cases_hospital = get_hospital_covid_cases(
         hospital_name,
         fechas)
 
