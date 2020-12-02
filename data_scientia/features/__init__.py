@@ -112,7 +112,7 @@ def sample_entropy(x):
 
 
 def _into_subchunks(x, subchunk_length, every_n=1):
-    """"""
+    
     len_x = len(x)
 
     assert subchunk_length > 1
