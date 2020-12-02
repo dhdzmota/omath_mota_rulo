@@ -50,16 +50,13 @@ def get_municipio_features(hospital_name, fechas):
         x_local = features_contagios.transform(
             daily_cases_local.values
         ).add_prefix('contagios_')
+        x_rolling = []
+        for day_break in [8, 36, 43, 29]:
+            x_rolling.append(features_contagios.transform(
+                daily_cases_local.rolling(window=day_break).sum().values).add_prefix(f'contagios_sum_{day_break}_days_')
+                             )
 
-        x_rolling_7_days = features_contagios.transform(
-            daily_cases_local.rolling(window=7).sum().values
-        ).add_prefix('contagios_sum_7_days_')
-
-        x_rolling_15_days = features_contagios.transform(
-            daily_cases_local.rolling(window=15).sum().values
-        ).add_prefix('contagios_sum_15_days_')
-
-        x = pd.concat([x_local, x_rolling_7_days, x_rolling_15_days], axis=1)
+        x = pd.concat([x_local]+x_rolling, axis=1)
 
         X_municipios.append(x)
 
