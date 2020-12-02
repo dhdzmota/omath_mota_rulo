@@ -65,7 +65,7 @@ def get_hospital_covid_cases(hospital_name, fechas):
 
     X_covid_cases_features = []
     for fecha in fechas:
-        fecha_upper_boundary = fecha - datetime.timedelta(2)
+        fecha_upper_boundary = fecha - datetime.timedelta(1)
 
         daily_cases_local = daily_cases.loc[:fecha_upper_boundary]
 
