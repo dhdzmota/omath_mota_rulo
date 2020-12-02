@@ -9,20 +9,22 @@ from data_scientia import config
 from data_scientia.features import hospital
 from data_scientia.features import target_days_to_peak
 from data_scientia.features.utils import parallel
-from data_scientia.features import features_contagios
+from data_scientia.features import features_timeseries
 
 
+# Filepath of the dataset.
 DATA_PATH = os.path.join(
     config.DATA_DIR,
     'processed/train_data.csv.gz')
 
-
+# Target variables
 _TARGETS = [
     'is_next_peak_in_7_days',
-     'is_next_peak_in_15_days',
-     'is_next_peak_in_20_days',
-     'is_next_peak_in_30_days']
+    'is_next_peak_in_15_days',
+    'is_next_peak_in_20_days',
+    'is_next_peak_in_30_days']
 
+# Auxiliar variable of the groupy of hospitalss
 _DATA_GRP = None
 
 
@@ -32,6 +34,23 @@ def get_municipio_features(hospital_name, fechas):
     --------
     X_municipios: pandas.DataFrame
         One row for each fecha.
+
+    Examples
+    ---------
+    ::
+
+        hospital_name = 'ALTA ESPECIALIDAD DE ZUMPANGO'
+        fechas = pd.to_datetime([
+            '2020-11-05',
+            '2020-11-06',
+            '2020-11-07',
+            '2020-11-08',
+            '2020-11-09',
+            '2020-11-10',
+            '2020-11-11',
+            '2020-11-12',
+            '2020-11-13',
+            '2020-11-14'])
     """
 
     # Get municipios daily cases
@@ -41,107 +60,68 @@ def get_municipio_features(hospital_name, fechas):
 
     daily_cases.index = pd.to_datetime(daily_cases.index)
 
-    X_municipios = []
+    X_covid_cases_features = []
     for fecha in fechas:
-        fecha_ = fecha - datetime.timedelta(1)
+        fecha_upper_boundary = fecha - datetime.timedelta(1)
 
-        daily_cases_local = daily_cases.loc[:fecha_]
+        daily_cases_local = daily_cases.loc[:fecha_upper_boundary]
 
-        x_local = features_contagios.transform(
+        x = features_timeseries.transform(
             daily_cases_local.values
-        ).add_prefix('contagios_')
-        x_rolling = []
+        ).add_prefix('covid_cases_')
+
+        x_rolling = [x]
         for day_break in [8, 36, 43, 29]:
-            x_rolling.append(features_contagios.transform(
-                daily_cases_local.rolling(window=day_break).sum().values).add_prefix(f'contagios_sum_{day_break}_days_')
-                             )
+            x_r = features_timeseries.transform(
+                daily_cases_local.rolling(
+                    window=day_break
+                ).sum().values
+            ).add_prefix(f'covid_cases__sum_{day_break}_days_')
 
-        x = pd.concat([x_local]+x_rolling, axis=1)
+            x_rolling.append(x_r)
 
-        X_municipios.append(x)
+        x = pd.concat(x_rolling, axis=1)
 
-    X_municipios = pd.concat(X_municipios)
-    X_municipios.index = fechas
+        X_covid_cases_features.append(x)
 
-    return X_municipios
+    X_covid_cases_features = pd.concat(X_covid_cases_features)
+    X_covid_cases_features.index = fechas
 
-
-def get_hospital_features(hospital_name, fechas):
-    """
-    Include process_hospital() this in order to compute near hospital features.
-
-    X_neighbor_hospitals = get_hospital_features(
-        hospital_name,
-        fechas)
-
-    idx_dates = pd.Series(pd.Series(
-        X_municipio.index.tolist() + X_neighbor_hospitals.index.tolist()
-        X_municipio.index.tolist()
-    ).sort_values().unique())
-
-    dataset_local = pd.concat([
-        X_municipio.reindex(idx_dates),
-        X_neighbor_hospitals.reindex(idx_dates),
-        hospital_data.set_index('fecha').reindex(idx_dates)[_TARGETS]
-    ], axis=1)
-    """
-    # Get municipios daily cases
-    neighbor_hospitals_status = hospital.get_neighbor_hospitals_status(
-        hospital_name)
-    neighbor_hospitals_status.index = pd.to_datetime(
-        neighbor_hospitals_status.index)
-
-    X_neighbor_hospitals, dates = [], []
-    for fecha in fechas:
-        fecha_ = fecha - datetime.timedelta(1)
-
-        try:
-            neighbor_hospitals_status_ = neighbor_hospitals_status.loc[
-                :fecha_
-            ].values
-        except:
-            continue
-
-        if neighbor_hospitals_status_.shape[0] == 0:
-            continue
-
-        x_local = features_hospital.transform(
-            neighbor_hospitals_status_
-        ).add_prefix('neighbor_hosp_')
-
-        dates.append(fecha_)
-        X_neighbor_hospitals.append(x_local)
-
-    if len(X_neighbor_hospitals) == 0:
-        X_neighbor_hospitals = pd.DataFrame()
-    else:
-        X_neighbor_hospitals = pd.concat(X_neighbor_hospitals)
-        X_neighbor_hospitals.index = pd.to_datetime(dates)
-
-    return X_neighbor_hospitals
+    return X_covid_cases_features
 
 
 def process_hospital(hospital_name):
-    """
+    """Compute features for the hospital and its timeline.
+
+    Parameters
+    ----------
+    hospital_name: str
+        Hospital name.
+
+    Returns
+    -------
+
     """
 
     global _DATA_GRP
 
+    # Hospital data (From the occuation)
     hospital_data = _DATA_GRP.get_group(hospital_name)
 
+    # Hospital timeline
     fechas = hospital_data['fecha']
 
-    # Municipio features
-    X_municipio = get_municipio_features(
+    # Compute covid cases features for the hospital timeline
+    X_covid_cases_hospital = get_municipio_features(
         hospital_name,
         fechas)
 
     idx_dates = pd.Series(pd.Series(
-        X_municipio.index.tolist()
+        X_covid_cases_hospital.index.tolist()
     ).sort_values().unique())
 
     dataset_local = pd.concat([
-        X_municipio.reindex(idx_dates),
+        X_covid_cases_hospital.reindex(idx_dates),
         hospital_data.set_index('fecha').reindex(idx_dates)[_TARGETS]
     ], axis=1)
 
@@ -154,7 +134,10 @@ def process_hospital(hospital_name):
 
 
 def process():
-    """
+    """Compute the dataset.
+
+    Compute hospital dataset for all candidate dates.
+    The processesing is done assyncronously by hospital.
     """
     global _DATA_GRP
 
@@ -185,7 +168,7 @@ def process():
 
 
 def get():
-    """
+    """Fetch dataset.
     """
     data = pd.read_csv(
         DATA_PATH,
