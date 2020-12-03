@@ -75,12 +75,12 @@ Project Organization
     │   │
     │   ├── features       
     │   │    │ 
-             ├── covid_municipalities.py
-             ├── critical_peaks.py
-             ├── features_timeseries.py
-             ├── hospital.py
-             ├── target_days_to_peak.py
-             └── train_data.py
+    │   │    ├── covid_municipalities.py
+    │   │    ├── critical_peaks.py
+    │   │    ├── features_timeseries.py
+    │   │    ├── hospital.py
+    │   │    ├── target_days_to_peak.py
+    │   │    └── train_data.py
     │   │    
     │   │
     │   ├── models         
