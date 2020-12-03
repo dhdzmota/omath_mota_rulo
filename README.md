@@ -34,8 +34,7 @@ Deploy the model
 To deploy a new model, you have to be positioned in the 
 chalice folder and execute: `chalice deploy --connection-timeout 500 `
 
-Notebooks
-==============================
+
 Project Organization
 ------------
 
